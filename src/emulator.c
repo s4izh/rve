@@ -1,4 +1,5 @@
 #include "rve/emulator.h"
+#include "rve/cpu.h"
 #include "rve/memory.h"
 #include "rve/utils.h"
 #include <stdio.h>
@@ -36,6 +37,13 @@ int rve_run_binary(emulator_t *e, const char *program_filename)
 
 	u32 pc = 0;
 	cpu_init(&e->cpu, bus, pc);
+
+	u32 ins = cpu_fetch(&e->cpu);
+
+	while (ins) {
+		cpu_execute(&e->cpu, ins);
+		ins = cpu_fetch(&e->cpu);
+	}
 
 	return 0;
 }
