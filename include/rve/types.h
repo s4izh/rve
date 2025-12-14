@@ -2,6 +2,7 @@
 #define RVE_TYPES_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 // check if the compiler supports 128-bit integers
 #if defined(__SIZEOF_INT128__)
@@ -26,5 +27,16 @@ typedef uint64_t u64;
 // floating point types
 typedef float f32;
 typedef double f64;
+
+typedef uint32_t word;
+typedef uint8_t reg_t;
+typedef uint8_t funct_t;
+
+typedef uint32_t word;
+typedef int32_t s_word;
+typedef uint64_t dword;
+typedef int64_t s_dword;
+
+#define UNUSED(x) (void)(x)
 
 #endif // RVE_TYPES_H

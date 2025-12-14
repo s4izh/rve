@@ -1,54 +1,71 @@
 #include "rve/memory.h"
 #include "rve/peripheral.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
-typedef u64 (*read_fn)(void *, u64, u8);
-typedef u64 (*write_fn)(void *, u64, u64, u8);
-
 static struct peripheral_ops_t memory_ops = {
-	.read = (read_fn)memory_read,
-	.write = (write_fn)memory_write
+	.init = (peripheral_init_fn)memory_init,
+	.deinit = (peripheral_deinit_fn)memory_deinit,
+	.read = (peripheral_read_fn)memory_read,
+	.write = (peripheral_write_fn)memory_write
 };
 
-peripheral_t *memory_init(u64 addr_start, u64 addr_end)
+bool memory_init(peripheral_t *p)
 {
-	peripheral_ops_t *ops = &memory_ops;
+	assert(p != NULL);
 
-	memory_t *m = malloc(sizeof(memory_t));
-	assert(m != NULL);
+	memory_t *m = (memory_t *)p->ctx;
 
-	m->memory_size = addr_end - addr_start;
-	m->raw_memory = malloc(m->memory_size);
-	assert(m->raw_memory != NULL);
+	memory_deinit((memory_t *)p->ctx);
 
-	peripheral_t *peripheral =
-		peripheral_init(addr_start, addr_end, (void *)m, ops, "memory");
-
-	return peripheral;
+	m->size = p->addr_end - p->addr_start;
+	m->raw_memory = malloc(m->size);
+	return true;
 }
 
-int memory_load_file(memory_t *m, u64 addr, char *program_data,
-		     size_t program_size)
+bool memory_deinit(peripheral_t* p)
+{
+	assert(p != NULL);
+
+	memory_t *m = (memory_t *)p->ctx;
+
+	if (m == NULL)
+		return true;
+
+	if (m->raw_memory == NULL)
+		return true;
+
+	free(m->raw_memory);
+	m->raw_memory = NULL;
+
+	return true;
+}
+
+int memory_load_file(memory_t *m, u64 addr, char *program_data, size_t program_size)
 {
 	// TODO gap para el stack
-	if (program_size >= m->memory_size)
+	if (program_size >= m->size)
 		return -1;
 
-	memcpy(&m->raw_memory[addr - RVE_MEMORY_ADDR_START], program_data,
-	       program_size);
+	memcpy(&m->raw_memory[addr - RVE_MEMORY_ADDR_START], program_data, program_size);
 	return 0;
 }
 
-u64 memory_read(memory_t *m, u64 addr, u8 size)
+void memory_load_instruction(memory_t *m, word addr, word instruction)
 {
-	u64 value = 0;
-	memcpy(&m->raw_memory[addr], &value, size);
-	return value;
+	m->raw_memory[addr - RVE_MEMORY_ADDR_START] = instruction;
 }
 
-void memory_write(memory_t *m, u64 addr, u64 data, u8 size)
+bool memory_read(memory_t *m, u64 addr, u8 size, u64* result)
+{
+	memcpy(&result, &m->raw_memory[addr], size);
+	return true;
+}
+
+bool memory_write(memory_t *m, u64 addr, u8 size, u64 data)
 {
 	memcpy(&m->raw_memory[addr], &data, size);
+	return true;
 }

@@ -7,37 +7,33 @@ typedef struct peripheral_t peripheral_t;
 
 typedef struct peripheral_ops_t peripheral_ops_t;
 
+typedef bool (*peripheral_init_fn)(void *ctx);
+typedef bool (*peripheral_deinit_fn)(void *ctx);
+typedef bool (*peripheral_read_fn)(void *ctx, u64 addr, u8 size_bits, u64* result);
+typedef bool (*peripheral_write_fn)(void *ctx, u64 addr, u64 data, u8 size_bits);
+
 struct peripheral_ops_t {
-	// default
-	u64 (*read)(void *ctx, u64 addr, u8 size);
-	u64 (*write)(void *ctx, u64 addr, u64 data, u8 size);
-
-	// size specific operations
-	u8 (*read8)(void *ctx, u64 addr);
-	void (*write8)(void *ctx, u64 addr, u8 data);
-
-	u16 (*read16)(void *ctx, u64 addr);
-	void (*write16)(void *ctx, u64 addr, u16 data);
-
-	u32 (*read32)(void *ctx, u64 addr);
-	void (*write32)(void *ctx, u64 addr, u32 data);
-
-	u64 (*read64)(void *ctx, u64 addr);
-	void (*write64)(void *ctx, u64 addr, u64 data);
+	peripheral_init_fn init;
+	peripheral_deinit_fn deinit;
+	peripheral_read_fn read;
+	peripheral_write_fn write;
+    void (*tick)(void *ctx, u64 cycles_elapsed);
 };
 
+#define PERIPHERAL_NAME_MAX 32
+
 struct peripheral_t {
+	bool active;
+	char name[PERIPHERAL_NAME_MAX];
 	u64 addr_start;
 	u64 addr_end;
 
 	void *ctx;
 	peripheral_ops_t *ops;
-
-	char name[16];
+	void* config;
 };
 
-peripheral_t *peripheral_init(u64 addr_start, u64 addr_end, void *ctx, peripheral_ops_t *ops,
-			      const char *name);
+peripheral_t *peripheral_init(u64 addr_start, u64 addr_end, void *ctx, peripheral_ops_t *ops, const char *name);
 
 void peripheral_debug(peripheral_t *p);
 

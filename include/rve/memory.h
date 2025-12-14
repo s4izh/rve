@@ -13,14 +13,19 @@
 typedef struct memory_t memory_t;
 
 struct memory_t {
-	char *raw_memory;
-	size_t memory_size;
+	u8 *raw_memory;
+	size_t size;
 };
 
-u64 memory_read(memory_t *m, u64 addr, u8 size);
-void memory_write(memory_t *m, u64 addr, u64 data, u8 size);
+bool memory_init(peripheral_t *p);
+bool memory_read(memory_t *m, u64 addr, u8 size, u64* result);
+bool memory_write(memory_t *m, u64 addr, u8 size, u64 value);
 
-peripheral_t *memory_init(u64 addr_start, u64 addr_end);
+void memory_load_instruction(memory_t *m, word addr, word instruction);
+
+memory_t *memory_create_ctx(size_t size);
+
+void memory_flush(memory_t *m);
 
 int memory_load_file(memory_t *m, u64 addr, char *program_data, size_t program_size);
 

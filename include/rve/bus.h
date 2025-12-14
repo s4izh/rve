@@ -6,19 +6,22 @@
 
 #include <stdlib.h>
 
-typedef struct bus_t bus_t;
+#define BUS_MAX_PERIPHERALS 10
 
 struct bus_t {
-	peripheral_t **peripherals;
+	peripheral_t peripherals[BUS_MAX_PERIPHERALS];
 	size_t count;
-	size_t capacity;
 };
 
-bus_t* bus_init();
-void bus_add_peripheral(bus_t *bus, peripheral_t *peripheral);
+typedef struct bus_t bus_t;
+
+void bus_init(bus_t* bus);
+// void bus_add_peripheral(bus_t *bus, peripheral_t *peripheral);
+bool bus_add_peripheral(bus_t *bus, u64 addr_start, u64 addr_end, void* ctx, peripheral_ops_t* ops, const char* name);
+
 peripheral_t* bus_get_peripheral(bus_t *bus, u64 addr);
 
-void bus_write(bus_t *bus, u64 addr, u64 data, u8 size);
-u64 bus_read(bus_t *bus, u64 addr, u8 size);
+bool bus_write(bus_t *bus, word addr, u8 size, word data);
+bool bus_read(bus_t *bus, word addr, u8 size, word* data);
 
 #endif // RVE_BUS_H
