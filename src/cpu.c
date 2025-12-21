@@ -83,50 +83,50 @@ trap_t cpu_execute(cpu_t *cpu, decoded_instruction_t *di)
 				cpu->pc += sext(di->imm, 13);
 			break;
 		case INSTRUCTION_OP_LB:
-			if (!cpu_read(cpu, di->rs1 + sext(di->imm, 12), 8, &read_value)) {
+			if (!cpu_read(cpu, cpu->regs[di->rs1] + sext(di->imm, 12), 8, &read_value)) {
 				return TRAP_ERR;
 			}
 			cpu->regs[di->rd] = sext(value, 8);
 			break;
 		case INSTRUCTION_OP_LH:
-			if (!cpu_read(cpu, di->rs1 + sext(di->imm, 12), 16, &read_value)) {
+			if (!cpu_read(cpu, cpu->regs[di->rs1] + sext(di->imm, 12), 16, &read_value)) {
 				return TRAP_ERR;
 			}
 			cpu->regs[di->rd] = sext(value, 16);
 			break;
 		case INSTRUCTION_OP_LW:
-			if (!cpu_read(cpu, di->rs1 + sext(di->imm, 12), 32, &read_value)) {
+			if (!cpu_read(cpu, cpu->regs[di->rs1] + sext(di->imm, 12), 32, &read_value)) {
 				return TRAP_ERR;
 			}
-			cpu->regs[di->rd] = sext(value, 32);
+			cpu->regs[di->rd] = sext(read_value, 32);
 			break;
 		case INSTRUCTION_OP_LBU:
-			if (!cpu_read(cpu, di->rs1 + sext(di->imm, 12), 8, &read_value)) {
+			if (!cpu_read(cpu, cpu->regs[di->rs1] + sext(di->imm, 12), 8, &read_value)) {
 				return TRAP_ERR;
 			}
-			cpu->regs[di->rd] = value;
+			cpu->regs[di->rd] = read_value;
 			break;
 		case INSTRUCTION_OP_LHU:
-			if (!cpu_read(cpu, di->rs1 + sext(di->imm, 12), 16, &read_value)) {
+			if (!cpu_read(cpu, cpu->regs[di->rs1] + sext(di->imm, 12), 16, &read_value)) {
 				return TRAP_ERR;
 			}
-			cpu->regs[di->rd] = value;
+			cpu->regs[di->rd] = read_value;
 			break;
 		case INSTRUCTION_OP_SB:
-			value = di->rs2 & 0xFF;
-			if (!cpu_write(cpu, di->rs1 + sext(di->imm, 7), 8, value)) {
+			value = cpu->regs[di->rs2] & 0xFF;
+			if (!cpu_write(cpu, cpu->regs[di->rs1] + sext(di->imm, 7), 8, value)) {
 				return TRAP_ERR;
 			}
 			break;
 		case INSTRUCTION_OP_SH:
-			value = di->rs2 & 0xFFFF;
-			if (!cpu_write(cpu, di->rs1 + sext(di->imm, 7), 16, value)) {
+			value = cpu->regs[di->rs2] & 0xFFFF;
+			if (!cpu_write(cpu, cpu->regs[di->rs1] + sext(di->imm, 7), 16, value)) {
 				return TRAP_ERR;
 			}
 			break;
 		case INSTRUCTION_OP_SW:
-			value = di->rs2;
-			if (!cpu_write(cpu, di->rs1 + sext(di->imm, 7), value, 32)) {
+			value = cpu->regs[di->rs2];
+			if (!cpu_write(cpu, cpu->regs[di->rs1] + sext(di->imm, 7), value, 32)) {
 				return TRAP_ERR;
 			}
 			break;
