@@ -381,6 +381,22 @@ static inline void decode_instruction_r(decoded_instruction_t* di, u32 instructi
 				return;
 		}
 		break;
+	case RISCV_FUNCT7_MULDIV:
+		switch (di->funct3) {
+			case RISCV_FUNCT3_MUL:     di->op = INSTRUCTION_OP_MUL; break;
+			case RISCV_FUNCT3_MULH:    di->op = INSTRUCTION_OP_MULH; break;
+			case RISCV_FUNCT3_MULHSU:  di->op = INSTRUCTION_OP_MULHSU; break;
+			case RISCV_FUNCT3_MULHU:   di->op = INSTRUCTION_OP_MULHU; break;
+			case RISCV_FUNCT3_DIV:     di->op = INSTRUCTION_OP_DIV; break;
+			case RISCV_FUNCT3_DIVU:    di->op = INSTRUCTION_OP_DIVU; break;
+			case RISCV_FUNCT3_REM:     di->op = INSTRUCTION_OP_REM;	break;
+			case RISCV_FUNCT3_REMU:    di->op = INSTRUCTION_OP_REMU; break;
+			default:
+				fprintf(stderr, "ERROR: Unknown funct3 for MULDIV: %x\n", di->funct3);
+				di->valid = false;
+				return;
+		}
+		break;
 	default:
 		fprintf(stderr, "ERROR: Unknown funct7 for R-type instruction: %x\n", di->funct7);
 		di->valid = false;

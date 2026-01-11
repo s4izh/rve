@@ -83,6 +83,17 @@ typedef enum {
 	// === I-Type (System calls / CSRs - from Zicsr extension) ===
 	INSTRUCTION_OP_ECALL,  // Environment Call
 	INSTRUCTION_OP_EBREAK, // Environment Breakpoint
+
+	// === R-Type (Op Register muldiv M extension) ===
+	INSTRUCTION_OP_MUL,
+	INSTRUCTION_OP_MULH,
+	INSTRUCTION_OP_MULHSU,
+	INSTRUCTION_OP_MULHU,
+	INSTRUCTION_OP_DIV,
+	INSTRUCTION_OP_DIVU,
+	INSTRUCTION_OP_REM,
+	INSTRUCTION_OP_REMU,
+
 	// Instrucciones CSR (Podrían detallarse o agruparse)
 	INSTRUCTION_OP_CSRRW,  // Atomic Read/Write CSR
 	INSTRUCTION_OP_CSRRS,  // Atomic Read and Set Bits in CSR

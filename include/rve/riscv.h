@@ -108,6 +108,17 @@
 #define RISCV_FUNCT7_OR       0x00 // Para OR  (con funct3 = 0x6)
 #define RISCV_FUNCT7_AND      0x00 // Para AND (con funct3 = 0x7)
 
+#define RISCV_FUNCT7_MULDIV   0x01 // Para la extension M
+
+#define RISCV_FUNCT3_MUL      0x0
+#define RISCV_FUNCT3_MULH     0x1
+#define RISCV_FUNCT3_MULHSU   0x2
+#define RISCV_FUNCT3_MULHU    0x3
+#define RISCV_FUNCT3_DIV      0x4
+#define RISCV_FUNCT3_DIVU     0x5
+#define RISCV_FUNCT3_REM      0x6
+#define RISCV_FUNCT3_REMU     0x7
+
 // === Para RISCV_OPCODE_LUI (0x37) - Formato U ===
 // No usa funct3 ni funct7 para distinguir (opcode es suficiente)
 
