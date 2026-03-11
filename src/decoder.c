@@ -1,63 +1,79 @@
-#include "rve/cpu.h"
+/**
+ * @file decoder.c
+ * @brief RISC-V instruction decoder and disassembler implementation.
+ */
+
+#include "rve/hart.h"
 #include "rve/types.h"
 #include "rve/riscv.h"
 #include "rve/decoder.h"
 
 #include <stdio.h>
 
+/** @brief Extract the 7-bit opcode field (bits [6:0]). */
 static inline uint32_t get_opcode(word instruction)
 {
 	return (instruction & 0x7F);
 }
 
+/** @brief Extract the rd field (bits [11:7]). */
 static inline reg_t get_rd(word instruction)
 {
 	return (instruction >> 7) & 0x1F;
 }
 
+/** @brief Extract the funct3 field (bits [14:12]). */
 static inline reg_t get_funct3(word instruction)
 {
 	return (instruction >> 12) & 0x7;
 }
 
+/** @brief Extract the rs1 field (bits [19:15]). */
 static inline reg_t get_rs1(word instruction)
 {
 	return (instruction >> 15) & 0x1F;
 }
 
+/** @brief Extract the rs2 field (bits [24:20]). */
 static inline reg_t get_rs2(word instruction)
 {
 	return (instruction >> 20) & 0x1F;
 }
 
+/** @brief Extract the shift amount (same bits as rs2). */
 static inline reg_t get_shamt(word instruction)
 {
 	return get_rs2(instruction);
 }
 
+/** @brief Extract the funct7 field (bits [31:25]). */
 static inline reg_t get_funct7(word instruction)
 {
 	return (instruction >> 25) & 0x7F;
 }
 
+/** @brief Decode the I-type sign-extended 12-bit immediate. */
 static inline uint32_t get_imm_i(word instruction)
 {
-	// signed bit extension
+	/* Arithmetic right-shift sign-extends the immediate. */
 	return (int32_t)instruction >> 20;
 }
 
+/** @brief Decode the S-type sign-extended 12-bit immediate. */
 static inline uint32_t get_imm_s(word instruction)
 {
 	uint32_t imm_11_5 = get_funct7(instruction);
-	uint32_t imm_4_0 = get_rd(instruction);
+	uint32_t imm_4_0  = get_rd(instruction);
 	uint32_t imm_unsigned = (imm_11_5 << 5) | imm_4_0;
 	return (int32_t)(imm_unsigned << 20) >> 20;
 }
 
+/** @brief Decode the U-type 32-bit immediate (upper 20 bits, lower 12 zero). */
 static inline uint32_t get_imm_u(word instruction)
 {
     return (uint32_t)(instruction & 0xFFFFF000);
 }
+
 
 static inline int32_t get_imm_j(word instruction)
 {
@@ -66,7 +82,7 @@ static inline int32_t get_imm_j(word instruction)
     uint32_t imm_11    = (instruction >> 20) & 0x1;   // bit 20 -> imm[11]
     uint32_t imm_19_12 = (instruction >> 12) & 0xFF;  // bits 19:12 -> imm[19:12]
     uint32_t imm_unsigned = (imm_20 << 20) | (imm_19_12 << 12) | (imm_11 << 11) | (imm_10_1 << 1);
-    // sign extend desde 21 bits (bit 0 implícito es 0)
+    // sign extend desde 21 bits (bit 0 implicito es 0)
     return (int32_t)(imm_unsigned << 11) >> 11;
 }
 
@@ -215,26 +231,31 @@ static inline void decode_instruction_i(decoded_instruction_t* di, u32 instructi
 
 		case RISCV_OPCODE_SYSTEM:
 			// Extraer campos relevantes para SYSTEM
-			// di->imm contendrá el índice CSR o el código ECALL/EBREAK/etc.
+			// di->imm contendra el indice CSR o el codigo ECALL/EBREAK/etc.
 			di->imm = get_imm_i(instruction); // Bits 31:20
 			di->funct3 = get_funct3(instruction);
-			// rd y rs1 ya fueron extraídos. rs1 contiene uimm[4:0] para CSRR*I
+			// rd y rs1 ya fueron extraidos. rs1 contiene uimm[4:0] para CSRR*I
 
 			switch (di->funct3) {
 				case RISCV_FUNCT3_PRIV: { // Scope para rs2_val
 						reg_t rs2_val = get_rs2(instruction); // Bits 24:20
+						uint32_t funct12 = di->imm & 0xFFF;
 						// Chequear ECALL (imm=0, rd=0, rs1=0, rs2=0)
-						if (di->imm == RISCV_FUNCT12_ECALL && di->rs1 == 0 && di->rd == 0 && rs2_val == 0) {
+						if (funct12 == RISCV_FUNCT12_ECALL && di->rs1 == 0 && di->rd == 0 && rs2_val == 0) {
 							di->op = INSTRUCTION_OP_ECALL;
-							di->imm = 0; // Guardar el código como inmediato
+							di->imm = 0; // Guardar el codigo como inmediato
 						// Chequear EBREAK (imm=1, rd=0, rs1=0, rs2=1)
-						} else if (di->imm == RISCV_FUNCT12_EBREAK && di->rs1 == 0 && di->rd == 0 && rs2_val == 1) {
+						} else if (funct12 == RISCV_FUNCT12_EBREAK && di->rs1 == 0 && di->rd == 0 && rs2_val == 1) {
 							di->op = INSTRUCTION_OP_EBREAK;
-							di->imm = 1; // Guardar el código como inmediato
+							di->imm = 1; // Guardar el codigo como inmediato
+						}
+						else if (funct12 == RISCV_FUNCT12_MRET && di->rs1 == 0 && di->rd == 0 && rs2_val == 2) {
+							// MRET is 0x30200073: imm=0x302, rs2=0, rs1=0, rd=0
+							di->op = INSTRUCTION_OP_MRET;
 						} else {
-							// Aquí se manejarían WFI, MRET, SRET, SFENCE.VMA si se implementan
+							// Aqui se manejarian WFI, SRET, SFENCE.VMA si se implementan
 							// diferenciando por los valores en di->imm y rs2_val/funct7
-							fprintf(stderr, "TODO/ERROR: Unsupported PRIV instruction (funct3=0, imm=0x%x, rs2=0x%x) in Inst: 0x%08X\n", di->imm, rs2_val, instruction);
+							fprintf(stderr, "TODO/ERROR: Unsupported PRIV instruction (funct3=0, imm=0x%x, rs2=0x%x) in Inst: 0x%08X\n", funct12, rs2_val, instruction);
 						}
 						// Forzar rd/rs1 a 0 en la estructura decodificada para ECALL/EBREAK por claridad
 						if(di->op == INSTRUCTION_OP_ECALL || di->op == INSTRUCTION_OP_EBREAK) {
@@ -245,7 +266,7 @@ static inline void decode_instruction_i(decoded_instruction_t* di, u32 instructi
 					break; // Salir del case PRIV
 
 				// --- Instrucciones CSR ---
-				// Nota: di->imm ya contiene el índice CSR (bits 31:20)
+				// Nota: di->imm ya contiene el indice CSR (bits 31:20)
 				// Para CSRR*I, di->rs1 contiene el uimm[4:0] (bits 19:15)
 				case RISCV_FUNCT3_CSRRW:  // 0b001
 					di->op = INSTRUCTION_OP_CSRRW;
@@ -258,14 +279,14 @@ static inline void decode_instruction_i(decoded_instruction_t* di, u32 instructi
 					break;
 				case RISCV_FUNCT3_CSRRWI: // 0b101
 					di->op = INSTRUCTION_OP_CSRRWI;
-					// La ejecución usará di->rs1 como uimm y di->imm como CSR index
+					// La ejecucion usara di->rs1 como uimm y di->imm como CSR index
 					break;
 				case RISCV_FUNCT3_CSRRSI: // 0b110
 					di->op = INSTRUCTION_OP_CSRRSI;
 					break;
 				case RISCV_FUNCT3_CSRRCI: // 0b111
 					di->op = INSTRUCTION_OP_CSRRCI;
-					// La ejecución usará di->rs1 como uimm y di->imm como CSR index
+					// La ejecucion usara di->rs1 como uimm y di->imm como CSR index
 					break;
 
 				default:
@@ -329,7 +350,7 @@ static inline void decode_instruction_s(decoded_instruction_t* di, u32 instructi
 		case RISCV_FUNCT3_SW: di->op = INSTRUCTION_OP_SW; break;
 		// RV64/RV128 usan funct3=011 para SD
 		default:
-			// Funct3 inválido para STORE en RV32I base
+			// Funct3 invalido para STORE en RV32I base
 			fprintf(stderr, "ERROR: Unknown funct3 for STORE instruction: 0x%x (Instruction: 0x%08X)\n",
 					di->funct3, instruction);
 			di->valid = false;
@@ -508,6 +529,7 @@ const char* rve_instruction_op_to_cstr(instruction_op_t op)
         case INSTRUCTION_OP_FENCE_I: return "INSTRUCTION_OP_FENCE_I";
         case INSTRUCTION_OP_ECALL:   return "INSTRUCTION_OP_ECALL";
         case INSTRUCTION_OP_EBREAK:  return "INSTRUCTION_OP_EBREAK";
+		case INSTRUCTION_OP_MRET:    return "INSTRUCTION_OP_MRET";
         case INSTRUCTION_OP_CSRRW:   return "INSTRUCTION_OP_CSRRW";
         case INSTRUCTION_OP_CSRRS:   return "INSTRUCTION_OP_CSRRS";
         case INSTRUCTION_OP_CSRRC:   return "INSTRUCTION_OP_CSRRC";
@@ -536,7 +558,7 @@ const char* rve_opcode_to_str(uint32_t opcode)
     }
 }
 
-// nombres ABI estándar para los registros x0-x31
+// nombres ABI estandar para los registros x0-x31
 // clang-format off
 static const char* abi_names[32] = {
     "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
@@ -665,7 +687,7 @@ int rve_decoded_format_to_buffer(const decoded_instruction_t *di, char *buffer, 
 
         // --- I-Type (Memory Synchronization) ---
         case INSTRUCTION_OP_FENCE:
-            return snprintf(buffer, buffer_size, "%-8s", "fence"); // Podría añadir pred/succ
+            return snprintf(buffer, buffer_size, "%-8s", "fence"); // Podria anadir pred/succ
         case INSTRUCTION_OP_FENCE_I:
             return snprintf(buffer, buffer_size, "%-8s", "fence.i");
 
@@ -687,10 +709,13 @@ int rve_decoded_format_to_buffer(const decoded_instruction_t *di, char *buffer, 
         case INSTRUCTION_OP_CSRRCI:
             return snprintf(buffer, buffer_size, "%-8s %s, 0x%03x, %u", "csrrci", get_abi_name(di->rd), (uint32_t)di->imm & 0xFFF, (uint32_t)di->rs1);
 
-        // Caso por defecto para operaciones válidas pero no manejadas explícitamente
+		case INSTRUCTION_OP_MRET:
+			return snprintf(buffer, buffer_size, "%-8s", "mret");
+
+        // Caso por defecto para operaciones validas pero no manejadas explicitamente
         case INSTRUCTION_OP_UNKNOWN: // Este caso es para di->valid = false, ya manejado arriba
             return snprintf(buffer, buffer_size, "<internal error: should be invalid>");
-        case INSTRUCTION_OP_NUM: // Marcador, no es una instrucción real
+        case INSTRUCTION_OP_NUM: // Marcador, no es una instruccion real
              return snprintf(buffer, buffer_size, "<internal error: OP_NUM>");
         default:
             return snprintf(buffer, buffer_size, "<unhandled valid op: %d format: %s>", di->op, rve_instruction_format_to_cstr(di->format));

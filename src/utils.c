@@ -1,3 +1,8 @@
+/**
+ * @file utils.c
+ * @brief Miscellaneous utility helpers.
+ */
+
 #include "rve/utils.h"
 #include <stdio.h>
 
@@ -20,8 +25,8 @@ int rve_file_to_string(const char *filename, char **buffer, size_t *size)
 		return -1;
 	}
 
-	fread(buffer, 1, *size, file);
-	*buffer[*size] = '\0';
+	fread(*buffer, 1, *size, file);
+	(*buffer)[*size] = '\0';
 
 	fclose(file);
 

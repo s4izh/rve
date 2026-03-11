@@ -3,15 +3,15 @@
 
 typedef struct {
     const char* name;         // Nombre descriptivo del caso
-    word        instruction;  // Instrucción codificada en 32 bits
-    bool        expect_valid; // Si se espera que la decodificación sea válida
+    word        instruction;  // Instruccion codificada en 32 bits
+    bool        expect_valid; // Si se espera que la decodificacion sea valida
     // --- Campos esperados (solo relevantes si expect_valid es true) ---
     instruction_format_t expect_format;
     instruction_op_t     expect_op;
-    reg_t                expect_rd;  // Usar un valor comodín (ej. 0xFF) si no aplica
-    reg_t                expect_rs1; // Usar un valor comodín (ej. 0xFF) si no aplica
-    reg_t                expect_rs2; // Usar un valor comodín (ej. 0xFF) si no aplica
-    uint32_t             expect_imm; // Usar un valor comodín si no aplica
+    reg_t                expect_rd;  // Usar un valor comodin (ej. 0xFF) si no aplica
+    reg_t                expect_rs1; // Usar un valor comodin (ej. 0xFF) si no aplica
+    reg_t                expect_rs2; // Usar un valor comodin (ej. 0xFF) si no aplica
+    uint32_t             expect_imm; // Usar un valor comodin si no aplica
 } decoder_test_case_t;
 
 #define NA 0xFF // O cualquier valor fuera de rango 0-31 para regs
@@ -29,7 +29,7 @@ const decoder_test_case_t decoder_tests[] = {
     {"jal x0, -32",        0xfe1ff06f, true, INSTRUCTION_FORMAT_J, INSTRUCTION_OP_JAL,   0, NA, NA, -32},// -32 = 0xFFFFFFE0
 
     // // --- I-Type (JALR) ---
-    {"jalr x0, 0(x1)",     0x00008067, true, INSTRUCTION_FORMAT_I, INSTRUCTION_OP_JALR,  0,  1, NA, 0},   // ret típico
+    {"jalr x0, 0(x1)",     0x00008067, true, INSTRUCTION_FORMAT_I, INSTRUCTION_OP_JALR,  0,  1, NA, 0},   // ret tipico
     {"jalr x5, 16(x2)",    0x010102E7, true, INSTRUCTION_FORMAT_I, INSTRUCTION_OP_JALR,  5,  2, NA, 16},
 
 	// // --- I-Type (Loads) ---
@@ -58,7 +58,7 @@ const decoder_test_case_t decoder_tests[] = {
     {"ori x14, x15, 0xFF", 0x0FF7E713, true, INSTRUCTION_FORMAT_I, INSTRUCTION_OP_ORI,  14, 15, NA, 0x0FF},
     {"andi x1, x1, 0",     0x0000F093, true, INSTRUCTION_FORMAT_I, INSTRUCTION_OP_ANDI,  1,  1, NA, 0},
 
-    // // --- I-Type (Shifts) --- // shamt está en bits 24:20
+    // // --- I-Type (Shifts) --- // shamt esta en bits 24:20
     {"slli x5, x6, 5",     0x00531293, true, INSTRUCTION_FORMAT_I, INSTRUCTION_OP_SLLI,  5,  6, NA, 5},  // imm = shamt
     {"srli x7, x8, 31",    0x01F45393, true, INSTRUCTION_FORMAT_I, INSTRUCTION_OP_SRLI,  7,  8, NA, 31}, // imm = shamt
     {"srai x9, x10, 10",   0x40a55493, true, INSTRUCTION_FORMAT_I, INSTRUCTION_OP_SRAI,  9, 10, NA, 10}, // imm = shamt
@@ -83,7 +83,7 @@ const decoder_test_case_t decoder_tests[] = {
     {"Invalid Opcode",     0xFFFFFFFF, false, INSTRUCTION_FORMAT_UNKNOWN, INSTRUCTION_OP_UNKNOWN, NA, NA, NA, NA_IMM},
     {"JALR with bad funct3",0x00009067, false, INSTRUCTION_FORMAT_UNKNOWN, INSTRUCTION_OP_UNKNOWN, NA, NA, NA, NA_IMM}, // JALR funct3=1
     {"LOAD with bad funct3",0x00C2B383, false, INSTRUCTION_FORMAT_UNKNOWN, INSTRUCTION_OP_UNKNOWN, NA, NA, NA, NA_IMM}, // LW funct3=3
-    // Agrega más casos inválidos (funct7 incorrecto para shifts/sub/sra, etc.)
+    // Agrega mas casos invalidos (funct7 incorrecto para shifts/sub/sra, etc.)
 };
 
 #define CHECK(condition, test_passed, failures, ...) \
@@ -95,7 +95,7 @@ const decoder_test_case_t decoder_tests[] = {
         *failures = *failures + 1; \
     }
 
-// Función para comparar campos relevantes basado en formato esperado
+// Funcion para comparar campos relevantes basado en formato esperado
 static void check_decoded_fields(const decoder_test_case_t* test, const decoded_instruction_t* decoded, bool* test_passed, int* failures) {
 
     CHECK(decoded->format == test->expect_format, test_passed, failures,
@@ -103,7 +103,7 @@ static void check_decoded_fields(const decoder_test_case_t* test, const decoded_
     CHECK(decoded->op == test->expect_op, test_passed, failures,
           "Operation mismatch! Expected: %d, Got: %d", test->expect_op, decoded->op);
 
-    // Comprobar campos solo si aplican al formato/operación ESPERADO
+    // Comprobar campos solo si aplican al formato/operacion ESPERADO
     switch(test->expect_format) {
         case INSTRUCTION_FORMAT_R:
             if (test->expect_rd != NA) CHECK(decoded->rd == test->expect_rd, test_passed, failures, "rd mismatch! E:%d G:%d", test->expect_rd, decoded->rd);
@@ -117,7 +117,7 @@ static void check_decoded_fields(const decoder_test_case_t* test, const decoded_
             if (test->expect_rd != NA) CHECK(decoded->rd == test->expect_rd, test_passed, failures, "rd mismatch! E:%d G:%d", test->expect_rd, decoded->rd);
             if (test->expect_rs1 != NA) CHECK(decoded->rs1 == test->expect_rs1, test_passed, failures, "rs1 mismatch! E:%d G:%d", test->expect_rs1, decoded->rs1);
             // rs2 no aplica
-            if (test->expect_op != INSTRUCTION_OP_FENCE && test->expect_op != INSTRUCTION_OP_FENCE_I) { // FENCE no usa imm estándar
+            if (test->expect_op != INSTRUCTION_OP_FENCE && test->expect_op != INSTRUCTION_OP_FENCE_I) { // FENCE no usa imm estandar
                 if (test->expect_imm != NA_IMM) CHECK(decoded->imm == test->expect_imm, test_passed, failures, "imm mismatch! E:%d G:%d", test->expect_imm, decoded->imm);
             }
              // Caso especial para shifts immediate: imm contiene shamt[4:0]
@@ -143,12 +143,12 @@ static void check_decoded_fields(const decoder_test_case_t* test, const decoded_
             break;
 
         default:
-            // No debería llegar aquí si la validez ya se comprobó
+            // No deberia llegar aqui si la validez ya se comprobo
             break;
     }
 }
 
-// Función principal de testing
+// Funcion principal de testing
 int run_decoder_tests() {
     int num_tests = sizeof(decoder_tests) / sizeof(decoder_tests[0]);
     int total_failures = 0;
@@ -171,11 +171,11 @@ int run_decoder_tests() {
         } else {
             // Si la validez coincide...
             if (test->expect_valid) {
-                // ...y se esperaba que fuera válida, comprobar campos
+                // ...y se esperaba que fuera valida, comprobar campos
                 check_decoded_fields(test, &decoded, &current_test_passed, &current_test_failures);
-                total_failures += current_test_failures; // Añadir fallos de campos
+                total_failures += current_test_failures; // Anadir fallos de campos
             } else {
-                // ...y se esperaba que fuera inválida, el test pasa
+                // ...y se esperaba que fuera invalida, el test pasa
                 // (ya comprobamos que decoded.valid == test->expect_valid)
             }
         }
@@ -183,7 +183,7 @@ int run_decoder_tests() {
         if (current_test_passed) {
             printf("    PASS\n");
         } else {
-             // Imprimir detalles si falló y se esperaba que fuera válido
+             // Imprimir detalles si fallo y se esperaba que fuera valido
              if (test->expect_valid) {
                 printf("    Decoded: Fmt:%d Op:%d rd:%d rs1:%d rs2:%d imm:%d(0x%X) Valid:%s\n",
                        decoded.format, decoded.op, decoded.rd, decoded.rs1, decoded.rs2,
@@ -193,5 +193,5 @@ int run_decoder_tests() {
     }
 
     printf("--- Decoder Test Summary: %d Failures ---\n", total_failures);
-    return total_failures; // Devolver número de fallos (0 si todo OK)
+    return total_failures; // Devolver numero de fallos (0 si todo OK)
 }

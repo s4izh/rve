@@ -1,10 +1,15 @@
-#include "rve/peripheral.h"
+/**
+ * @file peripheral.c
+ * @brief Generic peripheral helper functions.
+ */
+
+#include "rve/peripherals/peripheral.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-peripheral_t *peripheral_init(u64 addr_start, u64 addr_end, void *ctx,
+peripheral_t *peripheral_init(word addr_start, word addr_end, void *ctx,
 			      peripheral_ops_t *ops, const char *name)
 {
 	peripheral_t *peripheral = malloc(sizeof(peripheral_t));
@@ -23,6 +28,6 @@ peripheral_t *peripheral_init(u64 addr_start, u64 addr_end, void *ctx,
 void peripheral_debug(peripheral_t *p)
 {
 	printf("%s\n", p->name);
-	printf("	addr_start %lu\n", p->addr_start);
-	printf("	addr_end %lu\n", p->addr_end);
+	printf("	addr_start 0x%08X\n", p->addr_start);
+	printf("	addr_end   0x%08X\n", p->addr_end);
 }

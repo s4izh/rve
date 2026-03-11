@@ -1,0 +1,48 @@
+[
+  {
+    "file": "src/hart.c",
+    "arguments": [
+      "gcc",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-std=c99",
+      "-ggdb",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/hart.c",
+      "-o",
+      "build/release/hart.o"
+    ],
+    "directory": "/home/sergio/personal/rve",
+    "output": "build/release/hart.o"
+  },
+  {
+    "file": "src/hart.c",
+    "arguments": [
+      "gcc",
+      "-fno-omit-frame-pointer",
+      "-mno-omit-leaf-frame-pointer",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-std=c99",
+      "-ggdb",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/hart.c",
+      "-o",
+      "build/release/hart.o",
+      "-B/nix/store/l0l2ll1lmylczj1ihqn351af2kyp5x19-glibc-2.42-51/lib/",
+      "-idirafter",
+      "/nix/store/j8irrc0mpx029dw0rmadsjylg7h31ync-glibc-2.42-51-dev/include",
+      "-idirafter",
+      "/nix/store/sca0pf46jmxva40qahkcwys5c1lvk6n2-gcc-15.2.0/lib/gcc/x86_64-unknown-linux-gnu/15.2.0/include-fixed",
+      "-B/nix/store/ihpdbhy4rfxaixiamyb588zfc3vj19al-gcc-15.2.0-lib/lib"
+    ],
+    "directory": "/home/sergio/personal/rve",
+    "output": "build/release/hart.o"
+  }
+]

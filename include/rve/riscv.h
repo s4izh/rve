@@ -1,10 +1,10 @@
 #ifndef RISCV_OPCODES_H
 #define RISCV_OPCODES_H
 
-// Opcodes para la especificación RISC-V RV32I Base Integer Instruction Set
+// Opcodes para la especificacion RISC-V RV32I Base Integer Instruction Set
 // Fuente: RISC-V Unprivileged ISA Specification (Volumen I)
 // Nota: Estos son solo los 7 bits del opcode principal (bits 6:0).
-//       La decodificación completa requiere funct3 y/o funct7 en muchos casos.
+//       La decodificacion completa requiere funct3 y/o funct7 en muchos casos.
 
 // === Formato U (Upper Immediate) ===
 // Usado para cargar inmediatos grandes en los bits superiores de un registro.
@@ -19,15 +19,15 @@
 // Usados para operaciones con inmediatos cortos, cargas, y JALR.
 #define RISCV_OPCODE_JALR     0x67 // Jump and Link Register (jalr rd, rs1, imm)
 #define RISCV_OPCODE_LOAD     0x03 // Loads (lb, lh, lw, lbu, lhu rd, rs1, imm)
-#define RISCV_OPCODE_OP_IMM   0x13 // Operaciones Aritmético/Lógicas con Inmediato
+#define RISCV_OPCODE_OP_IMM   0x13 // Operaciones Aritmetico/Logicas con Inmediato
                              // (addi, slti, sltiu, xori, ori, andi, slli, srli, srai rd, rs1, imm)
 #define RISCV_OPCODE_MISC_MEM 0x0F // Memory Synchronization (fence, fence.i)
                              // Aunque 'fence' tiene formato propio, comparte bits con I y
-                             // a veces se agrupa aquí en la decodificación inicial.
+                             // a veces se agrupa aqui en la decodificacion inicial.
 #define RISCV_OPCODE_SYSTEM   0x73 // Llamadas al sistema / CSRs
                              // (ecall, ebreak, csrrw, csrrs, csrrc, csrrwi, csrrsi, csrrci)
-                             // Incluye instrucciones de la extensión Zicsr,
-                             // que es necesaria para el manejo básico del sistema.
+                             // Incluye instrucciones de la extension Zicsr,
+                             // que es necesaria para el manejo basico del sistema.
 
 
 // === Formato B (Branch) ===
@@ -39,8 +39,8 @@
 #define RISCV_OPCODE_STORE    0x23 // Stores (sb, sh, sw rs1, rs2, imm)
 
 // === Formato R (Register) ===
-// Usado para operaciones Aritmético/Lógicas entre registros.
-#define RISCV_OPCODE_OP       0x33 // Operaciones Aritmético/Lógicas Registro-Registro
+// Usado para operaciones Aritmetico/Logicas entre registros.
+#define RISCV_OPCODE_OP       0x33 // Operaciones Aritmetico/Logicas Registro-Registro
                              // (add, sub, slt, sltu, xor, or, and, sll, srl, sra rd, rs1, rs2)
 
 // === Para RISCV_OPCODE_LOAD (0x03) - Formato I ===
@@ -57,23 +57,23 @@
 #define RISCV_FUNCT3_FENCE_I  0x1 // FENCE.I instruction
 
 // === Para RISCV_OPCODE_OP_IMM (0x13) - Formato I ===
-// funct3 distingue la operación aritmética/lógica inmediata
+// funct3 distingue la operacion aritmetica/logica inmediata
 #define RISCV_FUNCT3_ADDI   0x0 // Add Immediate
 #define RISCV_FUNCT3_SLTI   0x2 // Set Less Than Immediate
 #define RISCV_FUNCT3_SLTIU  0x3 // Set Less Than Immediate Unsigned
 #define RISCV_FUNCT3_XORI   0x4 // XOR Immediate
 #define RISCV_FUNCT3_ORI    0x6 // OR Immediate
 #define RISCV_FUNCT3_ANDI   0x7 // AND Immediate
-// Para SLLI, SRLI, SRAI, funct3 es específico:
+// Para SLLI, SRLI, SRAI, funct3 es especifico:
 #define RISCV_FUNCT3_SLLI   0x1 // Shift Left Logical Immediate
 #define RISCV_FUNCT3_SRLI_SRAI 0x5 // Shift Right Logical/Arithmetic Immediate
 
-// --- funct7 específico para OP_IMM (bits 31:25 dentro del inmediato) ---
-// Para SLLI, SRLI, SRAI, el bit más significativo de funct7 distingue SRLI de SRAI
+// --- funct7 especifico para OP_IMM (bits 31:25 dentro del inmediato) ---
+// Para SLLI, SRLI, SRAI, el bit mas significativo de funct7 distingue SRLI de SRAI
 // El resto de bits de funct7 deben ser 0 para RV32I.
 #define RISCV_FUNCT7_SLLI   0x00 // Identificador para SLLI (junto con opcode y funct3)
 #define RISCV_FUNCT7_SRLI   0x00 // Identificador para SRLI (junto con opcode y funct3)
-#define RISCV_FUNCT7_SRAI   0x20 // Identificador para SRAI (junto con opcode y funct3) - Bit 30 está a 1
+#define RISCV_FUNCT7_SRAI   0x20 // Identificador para SRAI (junto con opcode y funct3) - Bit 30 esta a 1
 
 // === Para RISCV_OPCODE_AUIPC (0x17) - Formato U ===
 // No usa funct3 ni funct7 para distinguir (opcode es suficiente)
@@ -85,7 +85,7 @@
 #define RISCV_FUNCT3_SW   0x2 // Store Word
 
 // === Para RISCV_OPCODE_OP (0x33) - Formato R ===
-// funct3 y funct7 juntos distinguen la operación registro-registro
+// funct3 y funct7 juntos distinguen la operacion registro-registro
 #define RISCV_FUNCT3_ADD_SUB  0x0 // Add / Subtract
 #define RISCV_FUNCT3_SLL      0x1 // Shift Left Logical
 #define RISCV_FUNCT3_SLT      0x2 // Set Less Than
@@ -95,16 +95,16 @@
 #define RISCV_FUNCT3_OR       0x6 // OR
 #define RISCV_FUNCT3_AND      0x7 // AND
 
-// --- funct7 específico para OP (bits 31:25) ---
+// --- funct7 especifico para OP (bits 31:25) ---
 // Solo se necesita para diferenciar ADD/SUB y SRL/SRA (y extensiones como M)
 #define RISCV_FUNCT7_ADD      0x00 // Para ADD (con funct3 = 0x0)
-#define RISCV_FUNCT7_SUB      0x20 // Para SUB (con funct3 = 0x0) - Bit 30 está a 1
+#define RISCV_FUNCT7_SUB      0x20 // Para SUB (con funct3 = 0x0) - Bit 30 esta a 1
 #define RISCV_FUNCT7_SLL      0x00 // Para SLL (con funct3 = 0x1)
 #define RISCV_FUNCT7_SLT      0x00 // Para SLT (con funct3 = 0x2)
 #define RISCV_FUNCT7_SLTU     0x00 // Para SLTU (con funct3 = 0x3)
 #define RISCV_FUNCT7_XOR      0x00 // Para XOR (con funct3 = 0x4)
 #define RISCV_FUNCT7_SRL      0x00 // Para SRL (con funct3 = 0x5)
-#define RISCV_FUNCT7_SRA      0x20 // Para SRA (con funct3 = 0x5) - Bit 30 está a 1
+#define RISCV_FUNCT7_SRA      0x20 // Para SRA (con funct3 = 0x5) - Bit 30 esta a 1
 #define RISCV_FUNCT7_OR       0x00 // Para OR  (con funct3 = 0x6)
 #define RISCV_FUNCT7_AND      0x00 // Para AND (con funct3 = 0x7)
 
@@ -151,5 +151,6 @@
 // --- Valores en imm[11:0] / funct12 para distinguir ECALL/EBREAK (cuando funct3=0) ---
 #define RISCV_FUNCT12_ECALL  0x000 // Environment Call
 #define RISCV_FUNCT12_EBREAK 0x001 // Environment Breakpoint
+#define RISCV_FUNCT12_MRET   0x302
 
 #endif // RISCV_OPCODES_H

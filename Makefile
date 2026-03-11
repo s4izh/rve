@@ -49,6 +49,12 @@ $(BUILD_DIR_RELEASE)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/gen: tools/gen.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/gen.bin: $(BUILD_DIR)/gen
+	$(BUILD_DIR)/gen $(BUILD_DIR)/gen.bin
+
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 
