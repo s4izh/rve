@@ -20,6 +20,7 @@
           riscv64-pkgs.gcc
           autoconf
           gnumake
+          gcc
         ];
         shellHook = ''
           source set_env.sh

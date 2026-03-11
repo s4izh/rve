@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# setup_tests.sh  —  Build and strip riscv-tests ISA tests.
+# compile_tests.sh  —  Build and strip riscv-tests ISA tests.
 #
 # Usage:
-#   ./tools/setup_tests.sh [ISA...]
+#   ./tools/compile_tests.sh [ISA...]
 #
 # Examples:
-#   ./tools/setup_tests.sh                     # default: rv32ui rv32um
-#   ./tools/setup_tests.sh rv32ui              # only base integer
-#   ./tools/setup_tests.sh rv32ui rv32um rv32mi
+#   ./tools/compile_tests.sh                     # default: rv32ui rv32um
+#   ./tools/compile_tests.sh rv32ui              # only base integer
+#   ./tools/compile_tests.sh rv32ui rv32um
 #
 # Each ISA name maps to the -p- (physical, no VM) variants only.
 # Results land in: external/riscv-tests/isa/

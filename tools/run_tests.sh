@@ -8,7 +8,7 @@
 # Examples:
 #   ./tools/run_tests.sh                  # default: rv32ui rv32um
 #   ./tools/run_tests.sh rv32ui
-#   ./tools/run_tests.sh rv32ui rv32um rv32mi
+#   ./tools/run_tests.sh rv32ui rv32um
 #
 # Options (must come before ISA names):
 #   --emulator <path>    Path to rve binary (default: ./build/rve)
@@ -49,7 +49,7 @@ if [[ ! -x "$EMULATOR" ]]; then
 fi
 
 if [[ ! -d "$ISA_DIR" ]]; then
-    echo "ERROR: $ISA_DIR not found — run './tools/setup_tests.sh' first."
+    echo "ERROR: $ISA_DIR not found — run './tools/compile_tests.sh' first."
     exit 1
 fi
 
@@ -70,7 +70,7 @@ for ISA in "${ISA_SETS[@]}"; do
     BINARIES=( "$ISA_DIR"/${ISA}-p-*.bin )
 
     if [[ ${#BINARIES[@]} -eq 0 ]] || [[ ! -f "${BINARIES[0]}" ]]; then
-        echo "WARNING: No binaries found for $ISA — run './tools/setup_tests.sh $ISA'"
+        echo "WARNING: No binaries found for $ISA — run './tools/compile_tests.sh $ISA'"
         continue
     fi
 
